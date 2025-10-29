@@ -133,3 +133,7 @@ class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     create_order = CreateOrder.Field()
 
+
+
+class Query(graphene.ObjectType):
+    hello = graphene.String(default_value="Hello, GraphQL!")
