@@ -1,5 +1,8 @@
 import graphene
+from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django import DjangoObjectType
+
+from crm.filters import CustomerFilter, OrderFilter, ProductFilter
 from .models import Customer, Product, Order
 from django.db import transaction
 from django.core.validators import validate_email
@@ -151,3 +154,10 @@ class Query(graphene.ObjectType):
     
     def resolve_orders(self,info):
         return Order.objects.all()
+    
+
+
+class Query(graphene.ObjectType):
+    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
+    all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
+    all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
