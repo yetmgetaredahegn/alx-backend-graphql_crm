@@ -51,6 +51,7 @@ class CreateCustomer(graphene.Mutation):
             raise Exception("Invalid phone number format")
 
         customer = Customer.objects.create(name=name, email=email, phone=phone)
+        customer.save()
         return CreateCustomer(customer=customer, message="Customer created successfully!")
 
 
@@ -138,3 +139,15 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hello, GraphQL!")
     all_customers = graphene.List(CustomerType)
+    customers = graphene.List(CustomerType)
+    products = graphene.List(ProductType)
+    orders = graphene.List(OrderType)
+
+    def resolve_customers(self,info):
+        return Customer.objects.all()
+    
+    def resolve_products(self,info):
+        return Product.objects.all()
+    
+    def resolve_orders(self,info):
+        return Order.objects.all()
