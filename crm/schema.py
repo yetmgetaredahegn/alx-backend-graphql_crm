@@ -14,19 +14,41 @@ from decimal import Decimal
 class CustomerType(DjangoObjectType):
     class Meta:
         model = Customer
+        interfaces = (graphene.relay.Node,)
         fields = ("id", "name", "email", "phone", "created_at")
 
 
 class ProductType(DjangoObjectType):
     class Meta:
         model = Product
+        interfaces = (graphene.relay.Node,)
         fields = ("id", "name", "price", "stock")
 
 
 class OrderType(DjangoObjectType):
     class Meta:
         model = Order
+        interfaces = (graphene.relay.Node,)
         fields = ("id", "customer", "products", "total_amount", "order_date")
+
+# Relay Nodes (for pagination)
+class CustomerNode(DjangoObjectType):
+    class Meta:
+        model = Customer
+        interfaces = (graphene.relay.Node,)
+        fields = "__all__"
+
+class ProductNode(DjangoObjectType):
+    class Meta:
+        model = Product
+        interfaces = (graphene.relay.Node,)
+        fields = "__all__"
+
+class OrderNode(DjangoObjectType):
+    class Meta:
+        model = Order
+        interfaces = (graphene.relay.Node,)
+        fields = "__all__"
 
 
 class CreateCustomer(graphene.Mutation):
@@ -141,22 +163,21 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hello, GraphQL!")
-    all_customers = graphene.List(CustomerType)
     customers = graphene.List(CustomerType)
     products = graphene.List(ProductType)
     orders = graphene.List(OrderType)
-    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
-    all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
-    all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
+    all_customers = DjangoFilterConnectionField(CustomerNode, filterset_class=CustomerFilter)
+    all_products = DjangoFilterConnectionField(ProductNode, filterset_class=ProductFilter)
+    all_orders = DjangoFilterConnectionField(OrderNode, filterset_class=OrderFilter)
 
     def resolve_customers(self,info):
-        return Customer.objects.all()
+        return Customer.objects.prefetch_related('orders').all()
     
     def resolve_products(self,info):
-        return Product.objects.all()
+        return Product.objects.prefetch_related('orders').all()
     
     def resolve_orders(self,info):
-        return Order.objects.all()
+        return Order.objects.select_related('customer').prefetch_related('products').all()
     
 
 
